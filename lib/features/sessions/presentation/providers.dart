@@ -6,10 +6,27 @@ import '../../../core/services/location_service.dart';
 import '../../weather/data/weather_repository.dart';
 import '../data/session_repository.dart';
 import '../domain/fishing_session.dart';
+import '../domain/session_filter.dart';
 
-final sessionListProvider = StreamProvider<List<FishingSession>>(
-  (ref) => ref.watch(sessionRepositoryProvider).watchSessions(),
-);
+class SessionFilterNotifier extends Notifier<SessionFilter> {
+  @override
+  SessionFilter build() => const SessionFilter();
+
+  void set(SessionFilter filter) => state = filter;
+  void clear() => state = const SessionFilter();
+}
+
+final sessionFilterProvider =
+    NotifierProvider<SessionFilterNotifier, SessionFilter>(
+      SessionFilterNotifier.new,
+    );
+
+/// Filter dikerjakan oleh query Drift, bukan di memori.
+final sessionListProvider =
+    StreamProvider.family<List<FishingSession>, SessionFilter>(
+      (ref, filter) =>
+          ref.watch(sessionRepositoryProvider).watchSessions(filter: filter),
+    );
 
 final sessionDetailProvider = StreamProvider.family<FishingSession?, String>(
   (ref, id) => ref.watch(sessionRepositoryProvider).watchSession(id),

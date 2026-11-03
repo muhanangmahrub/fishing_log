@@ -35,7 +35,13 @@ class SessionDetailScreen extends ConsumerWidget {
     );
     if (ok != true) return;
     await ref.read(sessionFormControllerProvider.notifier).delete(sessionId);
-    if (context.mounted) context.go('/');
+    if (!context.mounted) return;
+    if (ref.read(sessionFormControllerProvider).hasError) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Gagal menghapus sesi')));
+      return;
+    }
+    context.go('/');
   }
 
   @override

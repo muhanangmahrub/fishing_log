@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fishing_log/core/db/app_database.dart';
 import 'package:fishing_log/features/sessions/data/session_repository.dart';
 import 'package:fishing_log/features/sessions/domain/catch_entry.dart';
+import 'package:fishing_log/features/sessions/domain/session_filter.dart';
 
 void main() {
   late AppDatabase db;
@@ -133,5 +134,49 @@ void main() {
     expect(await repo.watchSession(id).first, isNull);
     expect(await db.select(db.catches).get(), isEmpty);
     expect(await db.select(db.weatherSnapshots).get(), isEmpty);
+  });
+
+  group('watchSessions filter', () {
+    late String a, b, c;
+    late int otherSpecies;
+
+    setUp(() async {
+      otherSpecies = (await db.select(db.species).get()).last.id;
+      a = await newSession(DateTime(2026, 1, 10, 6));
+      b = await newSession(DateTime(2026, 2, 20, 23, 30));
+      c = await newSession(DateTime(2026, 3, 5, 6));
+      await repo.addCatch(draft(a));
+      await repo.addCatch(draft(b).copyWith(speciesId: otherSpecies));
+    });
+
+    Future<List<String>> ids(SessionFilter f) async => [
+      for (final s in await repo.watchSessions(filter: f).first) s.id,
+    ];
+
+    test('by species', () async {
+      expect(await ids(SessionFilter(speciesId: speciesId)), [a]);
+      expect(await ids(SessionFilter(speciesId: otherSpecies)), [b]);
+    });
+
+    test('by date range is inclusive of whole end day', () async {
+      expect(
+        await ids(
+          SessionFilter(from: DateTime(2026, 2, 1), to: DateTime(2026, 2, 20)),
+        ),
+        [b],
+      );
+      expect(await ids(SessionFilter(from: DateTime(2026, 2, 21))), [c]);
+      expect(await ids(SessionFilter(to: DateTime(2026, 1, 10))), [a]);
+    });
+
+    test('species and date combine; empty filter returns all', () async {
+      expect(
+        await ids(
+          SessionFilter(speciesId: speciesId, from: DateTime(2026, 2, 1)),
+        ),
+        isEmpty,
+      );
+      expect(await ids(const SessionFilter()), [c, b, a]);
+    });
   });
 }

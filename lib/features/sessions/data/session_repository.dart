@@ -10,6 +10,7 @@ import '../../../core/services/photo_storage_service.dart';
 import '../domain/catch_entry.dart';
 import '../domain/catch_photo.dart';
 import '../domain/fishing_session.dart';
+import '../domain/session_filter.dart';
 
 /// Satu-satunya pintu UI ke data sesi; mengembalikan model domain, bukan Drift.
 class SessionRepository {
@@ -28,8 +29,44 @@ class SessionRepository {
   final PhotoStorageService? _photoStorage;
 
   /// Sesi terbaru dulu, lengkap dengan tangkapan dan cuaca.
-  Stream<List<FishingSession>> watchSessions() {
+  /// [filter] diterapkan di SQL: spesies (sesi yang punya tangkapan spesies itu)
+  /// dan rentang tanggal mulai sesi (inklusif, per hari kalender).
+  Stream<List<FishingSession>> watchSessions({
+    SessionFilter filter = const SessionFilter(),
+  }) {
     final query = _db.select(_db.sessions)
+      ..where((s) {
+        final conds = <Expression<bool>>[];
+        final speciesId = filter.speciesId;
+        if (speciesId != null) {
+          conds.add(
+            s.id.isInQuery(
+              _db.selectOnly(_db.catches)
+                ..addColumns([_db.catches.sessionId])
+                ..where(_db.catches.speciesId.equals(speciesId)),
+            ),
+          );
+        }
+        final from = filter.from;
+        if (from != null) {
+          conds.add(
+            s.startedAt.isBiggerOrEqualValue(
+              DateTime(from.year, from.month, from.day),
+            ),
+          );
+        }
+        final to = filter.to;
+        if (to != null) {
+          conds.add(
+            s.startedAt.isSmallerThanValue(
+              DateTime(to.year, to.month, to.day + 1),
+            ),
+          );
+        }
+        return conds.isEmpty
+            ? const Constant(true)
+            : conds.reduce((a, b) => a & b);
+      })
       ..orderBy([(s) => OrderingTerm.desc(s.startedAt)]);
     return _watchAll(query);
   }

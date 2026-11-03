@@ -185,6 +185,24 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
   }
 
   Future<void> _delete() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus tangkapan?'),
+        content: const Text('Tangkapan beserta fotonya akan dihapus permanen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
     await ref.read(sessionRepositoryProvider).deleteCatch(widget.existing!.id);
     if (mounted) Navigator.pop(context);
   }
