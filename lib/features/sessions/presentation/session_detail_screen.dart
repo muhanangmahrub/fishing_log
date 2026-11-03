@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../domain/catch_entry.dart';
 import '../domain/fishing_session.dart';
+import 'catch_form_sheet.dart';
 import 'providers.dart';
 
 class SessionDetailScreen extends ConsumerWidget {
@@ -93,16 +95,41 @@ class _Body extends StatelessWidget {
             'Tangkapan (${s.catchCount})',
             style: Theme.of(context).textTheme.titleMedium,
           ),
+          trailing: FilledButton.icon(
+            onPressed: () => showCatchFormSheet(context, sessionId: s.id),
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah tangkapan'),
+          ),
         ),
         if (s.catches.isEmpty)
-          const ListTile(title: Text('Belum ada tangkapan.'))
+          const ListTile(
+            title: Text('Boncos'),
+            subtitle: Text('Belum ada tangkapan.'),
+          )
         else
           for (final c in s.catches)
             ListTile(
               title: Text(c.speciesName),
-              subtitle: Text(formatDateTime(c.caughtAt)),
+              subtitle: Text(_catchSubtitle(c)),
+              onTap: () => showCatchFormSheet(
+                context,
+                sessionId: s.id,
+                existing: c,
+              ),
             ),
       ],
     );
   }
+}
+
+String _catchSubtitle(CatchEntry c) {
+  final parts = [
+    formatDateTime(c.caughtAt),
+    if (c.lengthCm != null) '${c.lengthCm} cm',
+    if (c.weightKg != null) '${c.weightKg} kg',
+    if (c.baitName != null) c.baitName!,
+    if (c.rigName != null) c.rigName!,
+    c.released ? 'Dilepas' : 'Dibawa',
+  ];
+  return parts.join(' · ');
 }
