@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/location_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../domain/fishing_session.dart';
 import 'providers.dart';
@@ -16,13 +17,16 @@ class SessionFormScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final id = sessionId;
     if (id == null) return const _SessionForm();
-    return ref.watch(sessionDetailProvider(id)).when(
-          loading: () => const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          ),
+    return ref
+        .watch(sessionDetailProvider(id))
+        .when(
+          loading: () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
           error: (e, _) => Scaffold(body: Center(child: Text('Gagal: $e'))),
           data: (s) => s == null
-              ? const Scaffold(body: Center(child: Text('Sesi tidak ditemukan')))
+              ? const Scaffold(
+                  body: Center(child: Text('Sesi tidak ditemukan')),
+                )
               : _SessionForm(existing: s),
         );
   }
@@ -40,6 +44,10 @@ class _SessionForm extends ConsumerStatefulWidget {
 class _SessionFormState extends ConsumerState<_SessionForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _location;
+  late final TextEditingController _lat;
+  late final TextEditingController _lon;
+  bool _locating = false;
+  String? _locationError;
   late DateTime _startedAt;
   DateTime? _endedAt;
   int? _rating;
@@ -49,15 +57,56 @@ class _SessionFormState extends ConsumerState<_SessionForm> {
     super.initState();
     final s = widget.existing;
     _location = TextEditingController(text: s?.locationName);
+    _lat = TextEditingController(text: s?.latitude.toString());
+    _lon = TextEditingController(text: s?.longitude.toString());
     _startedAt = s?.startedAt ?? DateTime.now();
     _endedAt = s?.endedAt;
     _rating = s?.rating;
+    if (s == null) _fetchLocation(overwrite: false);
   }
 
   @override
   void dispose() {
     _location.dispose();
+    _lat.dispose();
+    _lon.dispose();
     super.dispose();
+  }
+
+  /// Isi koordinat dari GPS. [overwrite] false: jangan timpa isian pengguna.
+  Future<void> _fetchLocation({bool overwrite = true}) async {
+    setState(() {
+      _locating = true;
+      _locationError = null;
+    });
+    try {
+      final c = await ref.read(sessionFormControllerProvider.notifier).locate();
+      if (!mounted) return;
+      setState(() {
+        if (overwrite || _lat.text.trim().isEmpty) {
+          _lat.text = c.latitude.toStringAsFixed(6);
+        }
+        if (overwrite || _lon.text.trim().isEmpty) {
+          _lon.text = c.longitude.toStringAsFixed(6);
+        }
+      });
+    } on LocationException catch (e) {
+      if (mounted) setState(() => _locationError = e.message);
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  static double? _parse(String v) =>
+      double.tryParse(v.trim().replaceAll(',', '.'));
+
+  static String? _coordValidator(String? v, double limit, String label) {
+    final n = _parse(v ?? '');
+    if (n == null) return '$label wajib diisi (angka)';
+    if (n < -limit || n > limit) {
+      return '$label harus antara -$limit dan $limit';
+    }
+    return null;
   }
 
   Future<DateTime?> _pickDateTime(DateTime initial) async {
@@ -78,10 +127,14 @@ class _SessionFormState extends ConsumerState<_SessionForm> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(sessionFormControllerProvider.notifier).save(
+    await ref
+        .read(sessionFormControllerProvider.notifier)
+        .save(
           existing: widget.existing,
           startedAt: _startedAt,
           endedAt: _endedAt,
+          latitude: _parse(_lat.text)!,
+          longitude: _parse(_lon.text)!,
           locationName: _location.text.trim(),
           rating: _rating,
         );
@@ -113,6 +166,53 @@ class _SessionFormState extends ConsumerState<_SessionForm> {
                   : null,
             ),
             const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _lat,
+                    decoration: const InputDecoration(labelText: 'Latitude'),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                    validator: (v) => _coordValidator(v, 90, 'Latitude'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _lon,
+                    decoration: const InputDecoration(labelText: 'Longitude'),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                    validator: (v) => _coordValidator(v, 180, 'Longitude'),
+                  ),
+                ),
+              ],
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _locating ? null : _fetchLocation,
+                icon: _locating
+                    ? const SizedBox.square(
+                        dimension: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.my_location),
+                label: const Text('Ambil lokasi saat ini'),
+              ),
+            ),
+            if (_locationError != null)
+              Text(
+                _locationError!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            const SizedBox(height: 8),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Waktu mulai'),
@@ -125,8 +225,8 @@ class _SessionFormState extends ConsumerState<_SessionForm> {
             ),
             FormField<DateTime?>(
               initialValue: _endedAt,
-              validator: (_) => _endedAt != null &&
-                      _endedAt!.isBefore(_startedAt)
+              validator: (_) =>
+                  _endedAt != null && _endedAt!.isBefore(_startedAt)
                   ? 'Waktu selesai harus setelah waktu mulai'
                   : null,
               builder: (field) => Column(
@@ -153,7 +253,9 @@ class _SessionFormState extends ConsumerState<_SessionForm> {
                       ],
                     ),
                     onTap: () async {
-                      final picked = await _pickDateTime(_endedAt ?? _startedAt);
+                      final picked = await _pickDateTime(
+                        _endedAt ?? _startedAt,
+                      );
                       if (picked != null) setState(() => _endedAt = picked);
                     },
                   ),

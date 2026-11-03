@@ -81,9 +81,7 @@ class _Body extends StatelessWidget {
         ),
         ListTile(
           title: const Text('Selesai'),
-          subtitle: Text(
-            s.endedAt == null ? '-' : formatDateTime(s.endedAt!),
-          ),
+          subtitle: Text(s.endedAt == null ? '-' : formatDateTime(s.endedAt!)),
         ),
         ListTile(
           title: const Text('Rating'),

@@ -19,32 +19,34 @@ void main() {
   tearDown(() => db.close());
 
   Future<String> newSession([DateTime? start]) => repo.createSession(
-        startedAt: start ?? DateTime(2026, 1, 1, 6),
-        latitude: -6.2,
-        longitude: 106.8,
-        locationName: 'Muara',
-      );
+    startedAt: start ?? DateTime(2026, 1, 1, 6),
+    latitude: -6.2,
+    longitude: 106.8,
+    locationName: 'Muara',
+  );
 
   CatchEntry draft(String sessionId, {int? baitId}) => CatchEntry(
-        id: '',
-        sessionId: sessionId,
-        speciesId: speciesId,
-        speciesName: '',
-        baitId: baitId,
-        caughtAt: DateTime(2026, 1, 1, 7),
-        lengthCm: 30,
-      );
+    id: '',
+    sessionId: sessionId,
+    speciesId: speciesId,
+    speciesName: '',
+    baitId: baitId,
+    caughtAt: DateTime(2026, 1, 1, 7),
+    lengthCm: 30,
+  );
 
-  test('create then watchSession maps to domain, blank session has 0 catches',
-      () async {
-    final id = await newSession();
-    final s = (await repo.watchSession(id).first)!;
-    expect(s.locationName, 'Muara');
-    expect(s.createdAt, now);
-    expect(s.catchCount, 0);
-    expect(s.isBlank, isTrue);
-    expect(s.weather, isNull);
-  });
+  test(
+    'create then watchSession maps to domain, blank session has 0 catches',
+    () async {
+      final id = await newSession();
+      final s = (await repo.watchSession(id).first)!;
+      expect(s.locationName, 'Muara');
+      expect(s.createdAt, now);
+      expect(s.catchCount, 0);
+      expect(s.isBlank, isTrue);
+      expect(s.weather, isNull);
+    },
+  );
 
   test('watchSession emits null for unknown id', () async {
     expect(await repo.watchSession('nope').first, isNull);
@@ -82,7 +84,8 @@ void main() {
     expect(s.catches.single.rigName, isNull);
 
     await repo.updateCatch(
-        s.catches.single.copyWith(lengthCm: 45, released: true));
+      s.catches.single.copyWith(lengthCm: 45, released: true),
+    );
     s = (await repo.watchSession(id).first)!;
     expect(s.catches.single.lengthCm, 45);
     expect(s.catches.single.released, isTrue);
@@ -106,20 +109,24 @@ void main() {
   test('deleteSession removes catches and weather, maps weather', () async {
     final id = await newSession();
     await repo.addCatch(draft(id));
-    await db.into(db.weatherSnapshots).insert(WeatherSnapshotsCompanion.insert(
-          sessionId: id,
-          fetchedAt: now,
-          temperatureC: 28,
-          apparentTempC: 30,
-          humidity: 80,
-          pressureHpa: 1010,
-          windSpeedKmh: 12,
-          windDirectionDeg: 90,
-          cloudCover: 40,
-          precipitationMm: 0,
-          weatherCode: 1,
-          rawJson: '{}',
-        ));
+    await db
+        .into(db.weatherSnapshots)
+        .insert(
+          WeatherSnapshotsCompanion.insert(
+            sessionId: id,
+            fetchedAt: now,
+            temperatureC: 28,
+            apparentTempC: 30,
+            humidity: 80,
+            pressureHpa: 1010,
+            windSpeedKmh: 12,
+            windDirectionDeg: 90,
+            cloudCover: 40,
+            precipitationMm: 0,
+            weatherCode: 1,
+            rawJson: '{}',
+          ),
+        );
     expect((await repo.watchSession(id).first)!.weather!.temperatureC, 28);
 
     await repo.deleteSession(id);

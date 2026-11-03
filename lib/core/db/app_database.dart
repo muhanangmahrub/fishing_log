@@ -50,35 +50,43 @@ const _seedRigs = [
 ];
 
 @DriftDatabase(
-  tables: [Sessions, Catches, CatchPhotos, WeatherSnapshots, Species, Baits, Rigs],
+  tables: [
+    Sessions,
+    Catches,
+    CatchPhotos,
+    WeatherSnapshots,
+    Species,
+    Baits,
+    Rigs,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
-      : super(executor ?? driftDatabase(name: 'fishing_log'));
+    : super(executor ?? driftDatabase(name: 'fishing_log'));
 
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          await batch((b) {
-            b.insertAll(species, [
-              for (final n in _seedSpecies) SpeciesCompanion.insert(name: n),
-            ]);
-            b.insertAll(baits, [
-              for (final n in _seedBaits) BaitsCompanion.insert(name: n),
-            ]);
-            b.insertAll(rigs, [
-              for (final n in _seedRigs) RigsCompanion.insert(name: n),
-            ]);
-          });
-        },
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    onCreate: (m) async {
+      await m.createAll();
+      await batch((b) {
+        b.insertAll(species, [
+          for (final n in _seedSpecies) SpeciesCompanion.insert(name: n),
+        ]);
+        b.insertAll(baits, [
+          for (final n in _seedBaits) BaitsCompanion.insert(name: n),
+        ]);
+        b.insertAll(rigs, [
+          for (final n in _seedRigs) RigsCompanion.insert(name: n),
+        ]);
+      });
+    },
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {

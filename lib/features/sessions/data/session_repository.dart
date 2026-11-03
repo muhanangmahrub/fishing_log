@@ -11,8 +11,8 @@ import '../domain/fishing_session.dart';
 /// Satu-satunya pintu UI ke data sesi; mengembalikan model domain, bukan Drift.
 class SessionRepository {
   SessionRepository(this._db, {DateTime Function()? clock, Uuid? uuid})
-      : _clock = clock ?? DateTime.now,
-        _uuid = uuid ?? const Uuid();
+    : _clock = clock ?? DateTime.now,
+      _uuid = uuid ?? const Uuid();
 
   final AppDatabase _db;
   final DateTime Function() _clock;
@@ -39,9 +39,9 @@ class SessionRepository {
     return sessions.asyncMap((rows) async {
       final ids = rows.map((r) => r.id).toList();
       final catches = await _catchesFor(ids);
-      final weather = await (_db.select(_db.weatherSnapshots)
-            ..where((w) => w.sessionId.isIn(ids)))
-          .get();
+      final weather = await (_db.select(
+        _db.weatherSnapshots,
+      )..where((w) => w.sessionId.isIn(ids))).get();
       final weatherById = {for (final w in weather) w.sessionId: w};
       return [
         for (final r in rows)
@@ -51,13 +51,20 @@ class SessionRepository {
   }
 
   Future<Map<String, List<CatchEntry>>> _catchesFor(List<String> ids) async {
-    final q = _db.select(_db.catches).join([
-      innerJoin(_db.species, _db.species.id.equalsExp(_db.catches.speciesId)),
-      leftOuterJoin(_db.baits, _db.baits.id.equalsExp(_db.catches.baitId)),
-      leftOuterJoin(_db.rigs, _db.rigs.id.equalsExp(_db.catches.rigId)),
-    ])
-      ..where(_db.catches.sessionId.isIn(ids))
-      ..orderBy([OrderingTerm.asc(_db.catches.caughtAt)]);
+    final q =
+        _db.select(_db.catches).join([
+            innerJoin(
+              _db.species,
+              _db.species.id.equalsExp(_db.catches.speciesId),
+            ),
+            leftOuterJoin(
+              _db.baits,
+              _db.baits.id.equalsExp(_db.catches.baitId),
+            ),
+            leftOuterJoin(_db.rigs, _db.rigs.id.equalsExp(_db.catches.rigId)),
+          ])
+          ..where(_db.catches.sessionId.isIn(ids))
+          ..orderBy([OrderingTerm.asc(_db.catches.caughtAt)]);
     final result = <String, List<CatchEntry>>{};
     for (final row in await q.get()) {
       final entry = _toCatch(
@@ -83,34 +90,41 @@ class SessionRepository {
   }) async {
     final id = _uuid.v4();
     final now = _clock();
-    await _db.into(_db.sessions).insert(SessionsCompanion.insert(
-          id: id,
-          startedAt: startedAt,
-          endedAt: Value(endedAt),
-          latitude: latitude,
-          longitude: longitude,
-          locationName: Value(locationName),
-          notes: Value(notes),
-          rating: Value(rating),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.sessions)
+        .insert(
+          SessionsCompanion.insert(
+            id: id,
+            startedAt: startedAt,
+            endedAt: Value(endedAt),
+            latitude: latitude,
+            longitude: longitude,
+            locationName: Value(locationName),
+            notes: Value(notes),
+            rating: Value(rating),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
   /// Memperbarui field sesi; tangkapan dan cuaca tidak ikut diubah.
   Future<void> updateSession(FishingSession session) async {
-    await (_db.update(_db.sessions)..where((s) => s.id.equals(session.id)))
-        .write(SessionsCompanion(
-      startedAt: Value(session.startedAt),
-      endedAt: Value(session.endedAt),
-      latitude: Value(session.latitude),
-      longitude: Value(session.longitude),
-      locationName: Value(session.locationName),
-      notes: Value(session.notes),
-      rating: Value(session.rating),
-      updatedAt: Value(_clock()),
-    ));
+    await (_db.update(
+      _db.sessions,
+    )..where((s) => s.id.equals(session.id))).write(
+      SessionsCompanion(
+        startedAt: Value(session.startedAt),
+        endedAt: Value(session.endedAt),
+        latitude: Value(session.latitude),
+        longitude: Value(session.longitude),
+        locationName: Value(session.locationName),
+        notes: Value(session.notes),
+        rating: Value(session.rating),
+        updatedAt: Value(_clock()),
+      ),
+    );
   }
 
   /// Tangkapan, foto, dan cuaca ikut terhapus (cascade).
@@ -126,14 +140,16 @@ class SessionRepository {
   }
 
   Future<void> updateCatch(CatchEntry entry) async {
-    await (_db.update(_db.catches)..where((c) => c.id.equals(entry.id)))
-        .write(_toCompanion(entry, entry.id));
+    await (_db.update(_db.catches)..where((c) => c.id.equals(entry.id))).write(
+      _toCompanion(entry, entry.id),
+    );
     await _touch(entry.sessionId);
   }
 
   Future<void> deleteCatch(String id) async {
-    final row = await (_db.select(_db.catches)..where((c) => c.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.catches,
+    )..where((c) => c.id.equals(id))).getSingleOrNull();
     if (row == null) return;
     await (_db.delete(_db.catches)..where((c) => c.id.equals(id))).go();
     await _touch(row.sessionId);
@@ -145,37 +161,36 @@ class SessionRepository {
   }
 
   CatchesCompanion _toCompanion(CatchEntry e, String id) => CatchesCompanion(
-        id: Value(id),
-        sessionId: Value(e.sessionId),
-        speciesId: Value(e.speciesId),
-        baitId: Value(e.baitId),
-        rigId: Value(e.rigId),
-        lengthCm: Value(e.lengthCm),
-        weightKg: Value(e.weightKg),
-        caughtAt: Value(e.caughtAt),
-        released: Value(e.released),
-        notes: Value(e.notes),
-      );
+    id: Value(id),
+    sessionId: Value(e.sessionId),
+    speciesId: Value(e.speciesId),
+    baitId: Value(e.baitId),
+    rigId: Value(e.rigId),
+    lengthCm: Value(e.lengthCm),
+    weightKg: Value(e.weightKg),
+    caughtAt: Value(e.caughtAt),
+    released: Value(e.released),
+    notes: Value(e.notes),
+  );
 
   FishingSession _toSession(
     Session s,
     List<CatchEntry> catches,
     db.WeatherSnapshot? w,
-  ) =>
-      FishingSession(
-        id: s.id,
-        startedAt: s.startedAt,
-        endedAt: s.endedAt,
-        latitude: s.latitude,
-        longitude: s.longitude,
-        locationName: s.locationName,
-        notes: s.notes,
-        rating: s.rating,
-        createdAt: s.createdAt,
-        updatedAt: s.updatedAt,
-        catches: catches,
-        weather: w == null ? null : _toWeather(w),
-      );
+  ) => FishingSession(
+    id: s.id,
+    startedAt: s.startedAt,
+    endedAt: s.endedAt,
+    latitude: s.latitude,
+    longitude: s.longitude,
+    locationName: s.locationName,
+    notes: s.notes,
+    rating: s.rating,
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+    catches: catches,
+    weather: w == null ? null : _toWeather(w),
+  );
 
   CatchEntry _toCatch(Catche c, Specy species, Bait? bait, Rig? rig) =>
       CatchEntry(
@@ -195,19 +210,19 @@ class SessionRepository {
       );
 
   WeatherSnapshot _toWeather(db.WeatherSnapshot w) => WeatherSnapshot(
-        sessionId: w.sessionId,
-        fetchedAt: w.fetchedAt,
-        temperatureC: w.temperatureC,
-        apparentTempC: w.apparentTempC,
-        humidity: w.humidity,
-        pressureHpa: w.pressureHpa,
-        windSpeedKmh: w.windSpeedKmh,
-        windDirectionDeg: w.windDirectionDeg,
-        cloudCover: w.cloudCover,
-        precipitationMm: w.precipitationMm,
-        weatherCode: w.weatherCode,
-        rawJson: w.rawJson,
-      );
+    sessionId: w.sessionId,
+    fetchedAt: w.fetchedAt,
+    temperatureC: w.temperatureC,
+    apparentTempC: w.apparentTempC,
+    humidity: w.humidity,
+    pressureHpa: w.pressureHpa,
+    windSpeedKmh: w.windSpeedKmh,
+    windDirectionDeg: w.windDirectionDeg,
+    cloudCover: w.cloudCover,
+    precipitationMm: w.precipitationMm,
+    weatherCode: w.weatherCode,
+    rawJson: w.rawJson,
+  );
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>(
