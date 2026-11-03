@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../weather/presentation/weather_card.dart';
 import '../domain/catch_entry.dart';
 import '../domain/fishing_session.dart';
 import 'catch_form_sheet.dart';
@@ -90,6 +91,7 @@ class _Body extends StatelessWidget {
           title: const Text('Rating'),
           subtitle: Text(s.rating == null ? '-' : '${s.rating} / 5'),
         ),
+        WeatherCard(sessionId: s.id, weather: s.weather),
         const Divider(),
         ListTile(
           title: Text(

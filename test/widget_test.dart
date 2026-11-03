@@ -2,12 +2,15 @@ import 'package:drift/native.dart';
 import 'package:fishing_log/app/app.dart';
 import 'package:fishing_log/core/db/app_database.dart';
 import 'package:fishing_log/core/services/location_service.dart';
+import 'package:fishing_log/features/weather/data/weather_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLocationService extends Mock implements LocationService {}
+
+class MockWeatherRepository extends Mock implements WeatherRepository {}
 
 /// Drift memakai I/O async sungguhan, yang tidak jalan di FakeAsync.
 Future<void> settle(WidgetTester tester) async {
@@ -22,6 +25,8 @@ void main() {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     final location = MockLocationService();
+    final weather = MockWeatherRepository();
+    when(() => weather.refresh(any())).thenAnswer((_) async => false);
     when(location.currentPosition)
         .thenAnswer((_) async => const Coordinates(-6.2, 106.8));
 
@@ -30,6 +35,7 @@ void main() {
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
           locationServiceProvider.overrideWithValue(location),
+          weatherRepositoryProvider.overrideWithValue(weather),
         ],
         child: const FishingLogApp(),
       ),

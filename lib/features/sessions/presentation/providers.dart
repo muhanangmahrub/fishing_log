@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/location_service.dart';
+import '../../weather/data/weather_repository.dart';
 import '../data/session_repository.dart';
 import '../domain/fishing_session.dart';
 
@@ -14,7 +15,7 @@ final sessionDetailProvider = StreamProvider.family<FishingSession?, String>(
   (ref, id) => ref.watch(sessionRepositoryProvider).watchSession(id),
 );
 
-/// Simpan/hapus sesi dan ambil GPS. Cuaca menyusul di step 8.
+/// Simpan/hapus sesi dan ambil GPS. Setelah tersimpan, cuaca diambil di latar belakang.
 class SessionFormController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {}
@@ -38,7 +39,7 @@ class SessionFormController extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       if (existing == null) {
-        await repo.createSession(
+        final id = await repo.createSession(
           startedAt: startedAt,
           endedAt: endedAt,
           latitude: latitude,
@@ -46,6 +47,7 @@ class SessionFormController extends AsyncNotifier<void> {
           locationName: locationName,
           rating: rating,
         );
+        _fetchWeather(id);
       } else {
         await repo.updateSession(
           existing.copyWith(
@@ -57,9 +59,20 @@ class SessionFormController extends AsyncNotifier<void> {
             rating: rating,
           ),
         );
+        // Waktu/lokasi berubah atau cuaca belum ada → ambil ulang.
+        final changed =
+            existing.weather == null ||
+            existing.startedAt != startedAt ||
+            existing.latitude != latitude ||
+            existing.longitude != longitude;
+        if (changed) _fetchWeather(existing.id);
       }
     });
   }
+
+  /// Non-blocking; `refresh` tidak pernah melempar.
+  void _fetchWeather(String sessionId) =>
+      unawaited(ref.read(weatherRepositoryProvider).refresh(sessionId));
 
   Future<void> delete(String id) async {
     final repo = ref.read(sessionRepositoryProvider);
