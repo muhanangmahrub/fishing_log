@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CatchEntry {
 
- String get id; String get sessionId; int get speciesId; String get speciesName; int? get baitId; String? get baitName; int? get rigId; String? get rigName; double? get lengthCm; double? get weightKg; DateTime get caughtAt; bool get released; String? get notes;
+ String get id; String get sessionId; int get speciesId; String get speciesName; int? get baitId; String? get baitName; int? get rigId; String? get rigName; double? get lengthCm; double? get weightKg; DateTime get caughtAt; bool get released; String? get notes; List<CatchPhoto> get photos;
 /// Create a copy of CatchEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +27,20 @@ $CatchEntryCopyWith<CatchEntry> get copyWith => _$CatchEntryCopyWithImpl<CatchEn
 @override
 bool operator ==(Object other) {
   final _this = this as CatchEntry;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatchEntry&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.sessionId, _this.sessionId) || other.sessionId == _this.sessionId)&&(identical(other.speciesId, _this.speciesId) || other.speciesId == _this.speciesId)&&(identical(other.speciesName, _this.speciesName) || other.speciesName == _this.speciesName)&&(identical(other.baitId, _this.baitId) || other.baitId == _this.baitId)&&(identical(other.baitName, _this.baitName) || other.baitName == _this.baitName)&&(identical(other.rigId, _this.rigId) || other.rigId == _this.rigId)&&(identical(other.rigName, _this.rigName) || other.rigName == _this.rigName)&&(identical(other.lengthCm, _this.lengthCm) || other.lengthCm == _this.lengthCm)&&(identical(other.weightKg, _this.weightKg) || other.weightKg == _this.weightKg)&&(identical(other.caughtAt, _this.caughtAt) || other.caughtAt == _this.caughtAt)&&(identical(other.released, _this.released) || other.released == _this.released)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatchEntry&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.sessionId, _this.sessionId) || other.sessionId == _this.sessionId)&&(identical(other.speciesId, _this.speciesId) || other.speciesId == _this.speciesId)&&(identical(other.speciesName, _this.speciesName) || other.speciesName == _this.speciesName)&&(identical(other.baitId, _this.baitId) || other.baitId == _this.baitId)&&(identical(other.baitName, _this.baitName) || other.baitName == _this.baitName)&&(identical(other.rigId, _this.rigId) || other.rigId == _this.rigId)&&(identical(other.rigName, _this.rigName) || other.rigName == _this.rigName)&&(identical(other.lengthCm, _this.lengthCm) || other.lengthCm == _this.lengthCm)&&(identical(other.weightKg, _this.weightKg) || other.weightKg == _this.weightKg)&&(identical(other.caughtAt, _this.caughtAt) || other.caughtAt == _this.caughtAt)&&(identical(other.released, _this.released) || other.released == _this.released)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&const DeepCollectionEquality().equals(other.photos, _this.photos));
 }
 
 
 @override
 int get hashCode {
   final _this = this as CatchEntry;
-  return Object.hash(runtimeType,_this.id,_this.sessionId,_this.speciesId,_this.speciesName,_this.baitId,_this.baitName,_this.rigId,_this.rigName,_this.lengthCm,_this.weightKg,_this.caughtAt,_this.released,_this.notes);
+  return Object.hash(runtimeType,_this.id,_this.sessionId,_this.speciesId,_this.speciesName,_this.baitId,_this.baitName,_this.rigId,_this.rigName,_this.lengthCm,_this.weightKg,_this.caughtAt,_this.released,_this.notes,const DeepCollectionEquality().hash(_this.photos));
 }
 
 @override
 String toString() {
   final _this = this as CatchEntry;
-  return 'CatchEntry(id: ${_this.id}, sessionId: ${_this.sessionId}, speciesId: ${_this.speciesId}, speciesName: ${_this.speciesName}, baitId: ${_this.baitId}, baitName: ${_this.baitName}, rigId: ${_this.rigId}, rigName: ${_this.rigName}, lengthCm: ${_this.lengthCm}, weightKg: ${_this.weightKg}, caughtAt: ${_this.caughtAt}, released: ${_this.released}, notes: ${_this.notes})';
+  return 'CatchEntry(id: ${_this.id}, sessionId: ${_this.sessionId}, speciesId: ${_this.speciesId}, speciesName: ${_this.speciesName}, baitId: ${_this.baitId}, baitName: ${_this.baitName}, rigId: ${_this.rigId}, rigName: ${_this.rigName}, lengthCm: ${_this.lengthCm}, weightKg: ${_this.weightKg}, caughtAt: ${_this.caughtAt}, released: ${_this.released}, notes: ${_this.notes}, photos: ${_this.photos})';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $CatchEntryCopyWith<$Res>  {
   factory $CatchEntryCopyWith(CatchEntry value, $Res Function(CatchEntry) _then) = _$CatchEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, String sessionId, int speciesId, String speciesName, int? baitId, String? baitName, int? rigId, String? rigName, double? lengthCm, double? weightKg, DateTime caughtAt, bool released, String? notes
+ String id, String sessionId, int speciesId, String speciesName, int? baitId, String? baitName, int? rigId, String? rigName, double? lengthCm, double? weightKg, DateTime caughtAt, bool released, String? notes, List<CatchPhoto> photos
 });
 
 
@@ -68,7 +68,7 @@ class _$CatchEntryCopyWithImpl<$Res>
 
 /// Create a copy of CatchEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sessionId = null,Object? speciesId = null,Object? speciesName = null,Object? baitId = freezed,Object? baitName = freezed,Object? rigId = freezed,Object? rigName = freezed,Object? lengthCm = freezed,Object? weightKg = freezed,Object? caughtAt = null,Object? released = null,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sessionId = null,Object? speciesId = null,Object? speciesName = null,Object? baitId = freezed,Object? baitName = freezed,Object? rigId = freezed,Object? rigName = freezed,Object? lengthCm = freezed,Object? weightKg = freezed,Object? caughtAt = null,Object? released = null,Object? notes = freezed,Object? photos = null,}) {
   return _then(CatchEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
@@ -83,7 +83,8 @@ as double?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: 
 as double?,caughtAt: null == caughtAt ? _self.caughtAt : caughtAt // ignore: cast_nullable_to_non_nullable
 as DateTime,released: null == released ? _self.released : released // ignore: cast_nullable_to_non_nullable
 as bool,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,photos: null == photos ? _self.photos : photos // ignore: cast_nullable_to_non_nullable
+as List<CatchPhoto>,
   ));
 }
 
@@ -168,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes,  List<CatchPhoto> photos)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CatchEntry() when $default != null:
-return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes);case _:
+return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes,_that.photos);case _:
   return orElse();
 
 }
@@ -189,10 +190,10 @@ return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes,  List<CatchPhoto> photos)  $default,) {final _that = this;
 switch (_that) {
 case _CatchEntry():
-return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes);case _:
+return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes,_that.photos);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +210,10 @@ return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sessionId,  int speciesId,  String speciesName,  int? baitId,  String? baitName,  int? rigId,  String? rigName,  double? lengthCm,  double? weightKg,  DateTime caughtAt,  bool released,  String? notes,  List<CatchPhoto> photos)?  $default,) {final _that = this;
 switch (_that) {
 case _CatchEntry() when $default != null:
-return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes);case _:
+return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that.baitId,_that.baitName,_that.rigId,_that.rigName,_that.lengthCm,_that.weightKg,_that.caughtAt,_that.released,_that.notes,_that.photos);case _:
   return null;
 
 }
@@ -224,7 +225,7 @@ return $default(_that.id,_that.sessionId,_that.speciesId,_that.speciesName,_that
 
 
 class _CatchEntry implements CatchEntry {
-  const _CatchEntry({required this.id, required this.sessionId, required this.speciesId, required this.speciesName, this.baitId, this.baitName, this.rigId, this.rigName, this.lengthCm, this.weightKg, required this.caughtAt, this.released = false, this.notes});
+  const _CatchEntry({required this.id, required this.sessionId, required this.speciesId, required this.speciesName, this.baitId, this.baitName, this.rigId, this.rigName, this.lengthCm, this.weightKg, required this.caughtAt, this.released = false, this.notes,  List<CatchPhoto> photos = const <CatchPhoto>[]}): _photos = photos;
   
 
 @override final  String id;
@@ -240,6 +241,13 @@ class _CatchEntry implements CatchEntry {
 @override final  DateTime caughtAt;
 @override@JsonKey() final  bool released;
 @override final  String? notes;
+ final  List<CatchPhoto> _photos;
+@override@JsonKey() List<CatchPhoto> get photos {
+  if (_photos is EqualUnmodifiableListView) return _photos;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_photos);
+}
+
 
 /// Create a copy of CatchEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -251,18 +259,18 @@ _$CatchEntryCopyWith<_CatchEntry> get copyWith => __$CatchEntryCopyWithImpl<_Cat
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatchEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.speciesId, speciesId) || other.speciesId == speciesId)&&(identical(other.speciesName, speciesName) || other.speciesName == speciesName)&&(identical(other.baitId, baitId) || other.baitId == baitId)&&(identical(other.baitName, baitName) || other.baitName == baitName)&&(identical(other.rigId, rigId) || other.rigId == rigId)&&(identical(other.rigName, rigName) || other.rigName == rigName)&&(identical(other.lengthCm, lengthCm) || other.lengthCm == lengthCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.caughtAt, caughtAt) || other.caughtAt == caughtAt)&&(identical(other.released, released) || other.released == released)&&(identical(other.notes, notes) || other.notes == notes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatchEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.speciesId, speciesId) || other.speciesId == speciesId)&&(identical(other.speciesName, speciesName) || other.speciesName == speciesName)&&(identical(other.baitId, baitId) || other.baitId == baitId)&&(identical(other.baitName, baitName) || other.baitName == baitName)&&(identical(other.rigId, rigId) || other.rigId == rigId)&&(identical(other.rigName, rigName) || other.rigName == rigName)&&(identical(other.lengthCm, lengthCm) || other.lengthCm == lengthCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.caughtAt, caughtAt) || other.caughtAt == caughtAt)&&(identical(other.released, released) || other.released == released)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.photos, _photos));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,sessionId,speciesId,speciesName,baitId,baitName,rigId,rigName,lengthCm,weightKg,caughtAt,released,notes);
+    return Object.hash(runtimeType,id,sessionId,speciesId,speciesName,baitId,baitName,rigId,rigName,lengthCm,weightKg,caughtAt,released,notes,const DeepCollectionEquality().hash(_photos));
 }
 
 @override
 String toString() {
-    return 'CatchEntry(id: $id, sessionId: $sessionId, speciesId: $speciesId, speciesName: $speciesName, baitId: $baitId, baitName: $baitName, rigId: $rigId, rigName: $rigName, lengthCm: $lengthCm, weightKg: $weightKg, caughtAt: $caughtAt, released: $released, notes: $notes)';
+    return 'CatchEntry(id: $id, sessionId: $sessionId, speciesId: $speciesId, speciesName: $speciesName, baitId: $baitId, baitName: $baitName, rigId: $rigId, rigName: $rigName, lengthCm: $lengthCm, weightKg: $weightKg, caughtAt: $caughtAt, released: $released, notes: $notes, photos: $photos)';
 }
 
 
@@ -273,7 +281,7 @@ abstract mixin class _$CatchEntryCopyWith<$Res> implements $CatchEntryCopyWith<$
   factory _$CatchEntryCopyWith(_CatchEntry value, $Res Function(_CatchEntry) _then) = __$CatchEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String sessionId, int speciesId, String speciesName, int? baitId, String? baitName, int? rigId, String? rigName, double? lengthCm, double? weightKg, DateTime caughtAt, bool released, String? notes
+ String id, String sessionId, int speciesId, String speciesName, int? baitId, String? baitName, int? rigId, String? rigName, double? lengthCm, double? weightKg, DateTime caughtAt, bool released, String? notes, List<CatchPhoto> photos
 });
 
 
@@ -290,7 +298,7 @@ class __$CatchEntryCopyWithImpl<$Res>
 
 /// Create a copy of CatchEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sessionId = null,Object? speciesId = null,Object? speciesName = null,Object? baitId = freezed,Object? baitName = freezed,Object? rigId = freezed,Object? rigName = freezed,Object? lengthCm = freezed,Object? weightKg = freezed,Object? caughtAt = null,Object? released = null,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sessionId = null,Object? speciesId = null,Object? speciesName = null,Object? baitId = freezed,Object? baitName = freezed,Object? rigId = freezed,Object? rigName = freezed,Object? lengthCm = freezed,Object? weightKg = freezed,Object? caughtAt = null,Object? released = null,Object? notes = freezed,Object? photos = null,}) {
   return _then(_CatchEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
@@ -305,7 +313,8 @@ as double?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: 
 as double?,caughtAt: null == caughtAt ? _self.caughtAt : caughtAt // ignore: cast_nullable_to_non_nullable
 as DateTime,released: null == released ? _self.released : released // ignore: cast_nullable_to_non_nullable
 as bool,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,photos: null == photos ? _self._photos : photos // ignore: cast_nullable_to_non_nullable
+as List<CatchPhoto>,
   ));
 }
 

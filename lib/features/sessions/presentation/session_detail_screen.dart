@@ -6,6 +6,7 @@ import '../../../core/utils/formatters.dart';
 import '../domain/catch_entry.dart';
 import '../domain/fishing_session.dart';
 import 'catch_form_sheet.dart';
+import 'photo_widgets.dart';
 import 'providers.dart';
 
 class SessionDetailScreen extends ConsumerWidget {
@@ -107,16 +108,30 @@ class _Body extends StatelessWidget {
             subtitle: Text('Belum ada tangkapan.'),
           )
         else
-          for (final c in s.catches)
+          for (final c in s.catches) ...[
             ListTile(
               title: Text(c.speciesName),
               subtitle: Text(_catchSubtitle(c)),
-              onTap: () => showCatchFormSheet(
-                context,
-                sessionId: s.id,
-                existing: c,
-              ),
+              onTap: () =>
+                  showCatchFormSheet(context, sessionId: s.id, existing: c),
             ),
+            if (c.photos.isNotEmpty)
+              SizedBox(
+                height: 64,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: c.photos.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) => PhotoThumb(
+                    path: c.photos[i].filePath,
+                    onTap: () => openPhotoViewer(context, [
+                      for (final p in c.photos) p.filePath,
+                    ], i),
+                  ),
+                ),
+              ),
+          ],
       ],
     );
   }

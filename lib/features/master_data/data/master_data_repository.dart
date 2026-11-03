@@ -53,29 +53,38 @@ class MasterDataRepository {
     if (name.isEmpty) throw ArgumentError('Nama tidak boleh kosong');
     switch (kind) {
       case MasterKind.species:
-        final existing = await (_db.select(_db.species)
-              ..where((t) => t.name.lower().equals(name.toLowerCase())))
-            .getSingleOrNull();
+        final existing =
+            await (_db.select(_db.species)
+                  ..where((t) => t.name.lower().equals(name.toLowerCase())))
+                .getSingleOrNull();
         if (existing != null) return existing.id;
-        return _db.into(_db.species).insert(
-          SpeciesCompanion.insert(name: name, isCustom: const Value(true)),
-        );
+        return _db
+            .into(_db.species)
+            .insert(
+              SpeciesCompanion.insert(name: name, isCustom: const Value(true)),
+            );
       case MasterKind.bait:
-        final existing = await (_db.select(_db.baits)
-              ..where((t) => t.name.lower().equals(name.toLowerCase())))
-            .getSingleOrNull();
+        final existing =
+            await (_db.select(_db.baits)
+                  ..where((t) => t.name.lower().equals(name.toLowerCase())))
+                .getSingleOrNull();
         if (existing != null) return existing.id;
-        return _db.into(_db.baits).insert(
-          BaitsCompanion.insert(name: name, isCustom: const Value(true)),
-        );
+        return _db
+            .into(_db.baits)
+            .insert(
+              BaitsCompanion.insert(name: name, isCustom: const Value(true)),
+            );
       case MasterKind.rig:
-        final existing = await (_db.select(_db.rigs)
-              ..where((t) => t.name.lower().equals(name.toLowerCase())))
-            .getSingleOrNull();
+        final existing =
+            await (_db.select(_db.rigs)
+                  ..where((t) => t.name.lower().equals(name.toLowerCase())))
+                .getSingleOrNull();
         if (existing != null) return existing.id;
-        return _db.into(_db.rigs).insert(
-          RigsCompanion.insert(name: name, isCustom: const Value(true)),
-        );
+        return _db
+            .into(_db.rigs)
+            .insert(
+              RigsCompanion.insert(name: name, isCustom: const Value(true)),
+            );
     }
   }
 }

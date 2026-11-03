@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:image_picker/image_picker.dart';
+
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../master_data/data/master_data_repository.dart';
 import '../data/session_repository.dart';
 import '../domain/catch_entry.dart';
+import '../domain/catch_photo.dart';
+import 'photo_widgets.dart';
 
 /// Bottom sheet tambah/edit tangkapan. [existing] != null berarti edit.
 Future<void> showCatchFormSheet(
@@ -41,11 +46,18 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
   late DateTime _caughtAt;
   late bool _released;
   bool _saving = false;
+  bool _saved = false;
+  late final PhotoStorageService _photoStorage;
+  late final List<CatchPhoto> _photos; // foto yang sudah tersimpan
+  final _removedPhotoIds = <String>{};
+  final _addedPaths = <String>[]; // file baru, belum masuk DB
 
   @override
   void initState() {
     super.initState();
+    _photoStorage = ref.read(photoStorageServiceProvider);
     final e = widget.existing;
+    _photos = [...?e?.photos];
     _speciesId = e?.speciesId;
     _baitId = e?.baitId;
     _rigId = e?.rigId;
@@ -61,6 +73,8 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
     _length.dispose();
     _weight.dispose();
     _notes.dispose();
+    // Dibatalkan: buang file yang sudah disalin tapi tidak pernah disimpan.
+    if (!_saved) _photoStorage.deleteAll(_addedPaths);
     super.dispose();
   }
 
@@ -121,6 +135,20 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
     return t.isEmpty ? null : double.parse(t);
   }
 
+  Future<void> _addPhoto(ImageSource source) async {
+    try {
+      final path = await _photoStorage.pickAndStore(source);
+      if (path != null && mounted) setState(() => _addedPaths.add(path));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto gagal diambil. Periksa izin kamera/galeri.'),
+        ),
+      );
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -139,11 +167,20 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
       released: _released,
       notes: notes.isEmpty ? null : notes,
     );
+    final String catchId;
     if (widget.existing == null) {
-      await repo.addCatch(entry);
+      catchId = await repo.addCatch(entry);
     } else {
+      catchId = widget.existing!.id;
       await repo.updateCatch(entry);
     }
+    for (final id in _removedPhotoIds) {
+      await repo.deletePhoto(id);
+    }
+    for (final path in _addedPaths) {
+      await repo.addPhoto(catchId, path);
+    }
+    _saved = true;
     if (mounted) Navigator.pop(context);
   }
 
@@ -185,6 +222,73 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
           icon: const Icon(Icons.add),
           onPressed: () => _addCustom(kind, label.toLowerCase()),
         ),
+      ],
+    );
+  }
+
+  Widget _photoSection() {
+    final shown = [
+      for (final p in _photos)
+        if (!_removedPhotoIds.contains(p.id))
+          (path: p.filePath, onRemove: () => _removedPhotoIds.add(p.id)),
+      for (final path in _addedPaths)
+        (
+          path: path,
+          onRemove: () {
+            _addedPaths.remove(path);
+            _photoStorage.delete(path);
+          },
+        ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Foto', style: Theme.of(context).textTheme.titleSmall),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () => _addPhoto(ImageSource.camera),
+              icon: const Icon(Icons.photo_camera),
+              label: const Text('Kamera'),
+            ),
+            TextButton.icon(
+              onPressed: () => _addPhoto(ImageSource.gallery),
+              icon: const Icon(Icons.photo_library),
+              label: const Text('Galeri'),
+            ),
+          ],
+        ),
+        if (shown.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final item in shown)
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    PhotoThumb(path: item.path),
+                    Positioned(
+                      top: -8,
+                      right: -8,
+                      child: IconButton.filled(
+                        tooltip: 'Hapus foto',
+                        iconSize: 14,
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 24,
+                          height: 24,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(item.onRemove),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
       ],
     );
   }
@@ -279,6 +383,8 @@ class _CatchFormSheetState extends ConsumerState<CatchFormSheet> {
                 decoration: const InputDecoration(labelText: 'Catatan'),
                 maxLines: 2,
               ),
+              const SizedBox(height: 8),
+              _photoSection(),
               const SizedBox(height: 16),
               Row(
                 children: [
